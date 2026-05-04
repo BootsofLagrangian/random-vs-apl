@@ -1,6 +1,6 @@
 # random-vs-apl
 
-Reproduction code for the random-vs-APL active preference learning experiments in arXiv 2604.02766.
+Reproduction code for **Random Is Hard to Beat: Active Selection in online DPO with Modern LLMs** (arXiv:2604.02766).
 
 This repository vendors a modified TRL fork used for the paper. The `trl/` directory is included intentionally because the paper experiments depend on paper-specific trainer and active-learning changes that are not available in upstream TRL.
 
@@ -93,7 +93,18 @@ The vendored TRL code keeps the upstream Apache-2.0 license terms. See `LICENSE`
 
 ## Citation
 
-See `CITATION.cff`.
+```bibtex
+@misc{oh2026randomhardbeat,
+  title = {Random Is Hard to Beat: Active Selection in online DPO with Modern LLMs},
+  author = {Oh, Giyeong and Lee, Junghyun and Park, Jaehyun and Yu, Youngjae and Bae, Wonho and Noh, Junhyug},
+  year = {2026},
+  eprint = {2604.02766},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi = {10.48550/arXiv.2604.02766},
+  url = {https://arxiv.org/abs/2604.02766}
+}
+```
 
 ## AI Assistance Disclosure
 

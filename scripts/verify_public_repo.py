@@ -53,7 +53,7 @@ PRIVATE_PATTERNS = [
 ]
 
 SKIP_DIR_NAMES = {".git"}
-TEXT_SUFFIXES = {".cfg", ".cff", ".ini", ".json", ".md", ".py", ".sh", ".toml", ".txt", ".yaml", ".yml"}
+TEXT_SUFFIXES = {".bib", ".cfg", ".cff", ".ini", ".json", ".md", ".py", ".sh", ".toml", ".txt", ".yaml", ".yml"}
 
 
 def iter_files(root: Path) -> Iterable[Path]:
@@ -74,7 +74,7 @@ def main() -> int:
     required = [
         "README.md",
         "LICENSE",
-        "CITATION.cff",
+        "CITATION.bib",
         "pyproject.toml",
         "requirements.txt",
         "setup.py",
