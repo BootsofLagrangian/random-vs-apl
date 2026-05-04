@@ -101,7 +101,6 @@ The vendored TRL code keeps the upstream Apache-2.0 license terms. See `LICENSE`
   eprint = {2604.02766},
   archivePrefix = {arXiv},
   primaryClass = {cs.LG},
-  doi = {10.48550/arXiv.2604.02766},
   url = {https://arxiv.org/abs/2604.02766}
 }
 ```
