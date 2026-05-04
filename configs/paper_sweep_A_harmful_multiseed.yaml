@@ -1,0 +1,129 @@
+# Paper Sweep A (core): Harmfulness alignment stability + RM dependence
+#
+# Grid:
+#   - Dataset: activeDap/sft-harm-data
+#   - Models: Qwen3-1.7B, Llama-3.2-3B (SFT baselines)
+#   - Reward models (in-loop + eval_judge): Deberta, Skywork-V2-Qwen3, Beaver
+#   - Query strategies: random vs apl
+#   - Seeds: 3 (multi-seed replication)
+#
+# Runs: 3 models × 3 RMs × 2 queries × 3 seeds = 54
+
+seeds: [42, 43, 44]
+
+defaults:
+  script_path: commands/run_active_envaware.sh
+  log_dir: logs/paper_sweep_A_harmful
+  max_concurrency: 0  # 0 => auto (number of GPUs unless overridden via CLI)
+  include_seed_in_output: true
+  base_env:
+    HF_HUB_OFFLINE: "0"
+    WANDB_MODE: "disabled"
+    WANDB_PROJECT: "active_dap_paper"
+    OUTPUT_ROOT_DIR: "outputs_paper/sweep_A"
+
+    ENABLE_LORA: "true"
+    SAVE_ONLY_MODEL: "true"
+
+    # Budget (match quick queue for comparability)
+    MAX_STEPS: "625"
+    UPDATES_PER_SAMPLE: "4"
+    PER_DEVICE_BATCH_SIZE: "16"
+    GRADIENT_ACCUMULATION_STEPS: "1"
+    FIX_GLOBAL_BATCH: "true"
+    BASE_NUM_GPUS: "1"
+
+    # Win-rate callback + reward scoring batches
+    NUM_EVAL_PROMPTS: "500"
+    PER_DEVICE_EVAL_BATCH_SIZE: "16"
+    EVAL_STEPS: "0.1"
+    LOGGING_STEPS: "0.1"
+    SAVE_STEPS: "0.1"
+
+    WARMUP_RATIO: "0.05"
+
+    # Enable per-sample replay logging for cross-RM checks.
+    HISTORY_LOG_MODE: "local"
+    HISTORY_LOCAL_DIR: "outputs_paper/sweep_A"
+    HISTORY_FLUSH_STEPS: "1"
+
+  evaluation:
+    enabled: false
+    baseline: true
+    baseline_mode: single
+    baseline_config_slug: baseline
+    baseline_config_hash: "00000000"
+    script_path: ${LM_EVAL_ROOT}/run_eval.sh
+    mode: all
+    generate_csv: true
+    cleanup_checkpoints: false
+    env:
+      EVAL_RESULTS_SUBDIR: evaluation_results_paper
+      LM_EVAL_BIN: ${LM_EVAL_BIN}
+      PYTHON_BIN: ${PYTHON_BIN}
+      LM_EVAL_DEVICE: cuda:0
+
+datasets:
+  activeDap/sft-harm-data:
+    models:
+      - activeDap/Qwen3-1.7B_hh_harmful
+      - activeDap/Llama-3.2-3B_hh_harmful
+      - activeDap/gemma-2b_hh_harmful
+
+alignments:
+  - name: odpo_deberta
+    env:
+      ALIGNMENT: online_dpo
+      LOSS_TYPE: sigmoid
+      LEARNING_RATE: "1e-6"
+      LORA_LEARNING_RATE: "5e-5"
+      REWARD_MODEL_PATH: "OpenAssistant/reward-model-deberta-v3-large-v2"
+      EVAL_JUDGE: "OpenAssistant/reward-model-deberta-v3-large-v2"
+      PER_DEVICE_EVAL_BATCH_SIZE: "16"
+
+  - name: odpo_skywork_v2_qwen3
+    env:
+      ALIGNMENT: online_dpo
+      LOSS_TYPE: sigmoid
+      LEARNING_RATE: "1e-6"
+      LORA_LEARNING_RATE: "5e-5"
+      REWARD_MODEL_PATH: "Skywork/Skywork-Reward-V2-Qwen3-8B"
+      EVAL_JUDGE: "Skywork/Skywork-Reward-V2-Qwen3-8B"
+      PER_DEVICE_EVAL_BATCH_SIZE: "8"
+
+  - name: odpo_beaver7b
+    env:
+      ALIGNMENT: online_dpo
+      LOSS_TYPE: sigmoid
+      LEARNING_RATE: "1e-6"
+      LORA_LEARNING_RATE: "5e-5"
+      REWARD_MODEL_PATH: "PKU-Alignment/beaver-7b-v1.0-reward"
+      EVAL_JUDGE: "PKU-Alignment/beaver-7b-v1.0-reward"
+      PER_DEVICE_EVAL_BATCH_SIZE: "8"
+
+  # Optional add-on RM (comment in when ready)
+  # - name: odpo_rlhflow_pairrm
+  #   env:
+  #     ALIGNMENT: online_dpo
+  #     LOSS_TYPE: sigmoid
+  #     LEARNING_RATE: "1e-6"
+  #     LORA_LEARNING_RATE: "5e-5"
+  #     REWARD_MODEL_PATH: "RLHFlow/pair-preference-model-LLaMA3-8B"
+  #     EVAL_JUDGE: "RLHFlow/pair-preference-model-LLaMA3-8B"
+  #     PER_DEVICE_EVAL_BATCH_SIZE: "8"
+
+lora_modes:
+  - name: lora
+    env:
+      ENABLE_LORA: "true"
+
+query_strategies:
+  - name: random
+    env:
+      QUERY_STRATEGY: random
+  - name: apl
+    env:
+      QUERY_STRATEGY: apl
+      QUERY_BATCH_SIZE: "32"
+
+overrides: []
